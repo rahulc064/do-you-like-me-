@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hey You! ❤️</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        /* Animated Gradient Background */
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(-45deg, #ff9a9e, #fecfef, #feada6, #f3a683);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            overflow: hidden;
+            position: relative;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Glassmorphism Card */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px 0 rgba(231, 76, 60, 0.2);
+            opacity: 0;
+            transform: scale(0.3);
+            z-index: 10;
+        }
+
+        /* Floating Hearts Container */
+        .heart {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.75;
+            animation: floatUp 6s linear infinite;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10vh) scale(1.2) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Glowing Yes Button */
+        .btn-yes {
+            background: linear-gradient(135deg, #ff4b91, #ff76ce);
+            box-shadow: 0 0 15px rgba(255, 75, 145, 0.6);
+            transition: all 0.3s ease;
+        }
+        .btn-yes:hover {
+            transform: scale(1.1) translateY(-3px);
+            box-shadow: 0 0 25px rgba(255, 75, 145, 0.9);
+        }
+        .btn-yes:active {
+            transform: scale(0.95);
+        }
+
+        /* No Button styling */
+        .btn-no {
+            transition: background-color 0.3s;
+        }
+
+        /* Audio Control Button */
+        .audio-control {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(5px);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="bg-music" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"></audio>
+    <div class="audio-control" id="mute-btn" onclick="toggleMusic()">
+        <i id="music-icon" class="fa-solid fa-volume-xmark text-pink-600 text-lg"></i>
+    </div>
+
+    <div class="glass-card p-8 md:p-12 w-11/12 max-w-md text-center flex flex-col items-center gap-6 m-4" id="main-card">
+        
+        <div class="w-48 h-48 flex items-center justify-center overflow-hidden rounded-full bg-pink-100/50 p-2 shadow-inner">
+            <img id="teddy-gif" src="https://media.tenor.com/z69_97Z67mYAAAAi/milk-and-mocha-bear.gif" alt="Cute Teddy Bear" class="w-full h-full object-contain">
+        </div>
+
+        <h1 class="text-2xl md:text-3xl font-bold text-gray-800 min-h-[40px]" id="question-text"></h1>
+
+        <div class="flex gap-6 w-full justify-center items-center mt-4 relative min-h-[60px]" id="btn-container">
+            <button class="btn-yes text-white font-semibold py-3 px-8 rounded-full text-lg cursor-pointer" onclick="handleYesClick()">
+                Yes! 💖
+            </button>
+            <button class="btn-no bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-8 rounded-full text-lg absolute md:static cursor-pointer" id="no-btn">
+                No 😢
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. Page Load Zoom & Entry Animation (GSAP) ---
+        window.addEventListener('DOMContentLoaded', () => {
+            gsap.to("#main-card", {
+                duration: 1.2,
+                scale: 1,
+                opacity: 1,
+                ease: "elastic.out(1, 0.75)",
+                onComplete: startTyping
+            });
+            createFloatingHearts();
+        });
+
+        // --- 2. Typing Effect ---
+        const textToType = "Do you like me? ❤️";
+        let index = 0;
+        function startTyping() {
+            const textElement = document.getElementById('question-text');
+            function type() {
+                if (index < textToType.length) {
+                    textElement.innerHTML += textToType.charAt(index);
+                    index++;
+                    setTimeout(type, 100);
+                }
+            }
+            type();
+        }
+
+        // --- 3. Background Floating Hearts Generator ---
+        function createFloatingHearts() {
+            const heartSymbols = ['❤️', '💖', '💝', '💕', '💗'];
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.classList.add('heart');
+                heart.innerHTML = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.fontSize = Math.random() * 20 + 15 + 'px';
+                heart.style.animationDuration = Math.random() * 3 + 4 + 's';
+                document.body.appendChild(heart);
+
+                // Clean up heart after animation ends
+                setTimeout(() => {
+                    heart.remove();
+                }, 7000);
+            }, 400);
+        }
+
+        // --- 4. The Evasive "No" Button Mechanics ---
+        const noBtn = document.getElementById('no-btn');
+        
+        function moveNoButton() {
+            // Get boundaries of the browser window
+            const padding = 20;
+            const maxX = window.innerWidth - noBtn.offsetWidth - padding;
+            const maxY = window.innerHeight - noBtn.offsetHeight - padding;
+
+            // Generate randomized random coordinates anywhere on screen
+            const randomX = Math.max(padding, Math.floor(Math.random() * maxX));
+            const randomY = Math.max(padding, Math.floor(Math.random() * maxY));
+
+            // Switch button to absolute layout dynamically if it's desktop setup
+            noBtn.style.position = 'absolute';
+
+            // Smoothly animate to new location via GSAP
+            gsap.to(noBtn, {
+                duration: 0.3,
+                left: randomX + 'px',
+                top: randomY + 'px',
+                ease: "power1.out"
+            });
+        }
+
+        // Run away on hover (Desktop) & Touch (Mobile)
+        noBtn.addEventListener('mouseenter', moveNoButton);
+        noBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault(); // Prevents clicking it accidentally on mobile devices
+            moveNoButton();
+        });
+
+        // --- 5. "Yes" Action Mechanics (Confetti + State Update) ---
+        function handleYesClick() {
+            // Update Text and GIF
+            document.getElementById('question-text').innerHTML = "Yay! I knew it! 🥰 Right back at you! ✨";
+            document.getElementById('teddy-gif').src = "https://media.tenor.com/9t8B_v927g0AAAAi/milk-and-mocha-bear.gif";
+            
+            // Hide the elusive No button
+            noBtn.style.display = 'none';
+
+            // Start Confetti Celebration
+            const duration = 5 * 1000;
+            const end = Date.now() + duration;
+
+            (function frame() {
+                confetti({
+                    particleCount: 3,
+                    angle: 60,
+                    spread: 55,
+                    origin: { x: 0 },
+                    colors: ['#ff4b91', '#ff76ce', '#ffffff']
+                });
+                confetti({
+                    particleCount: 3,
+                    angle: 120,
+                    spread: 55,
+                    origin: { x: 1 },
+                    colors: ['#ff4b91', '#ff76ce', '#ffffff']
+                });
+
+                if (Date.now() < end) {
+                    requestAnimationFrame(frame);
+                }
+            }());
+
+            // Auto turn on music on explicit user click interaction if not already playing
+            const music = document.getElementById('bg-music');
+            if(music.paused) {
+                toggleMusic();
+            }
+        }
+
+        // --- 6. Music Controls ---
+        function toggleMusic() {
+            const music = document.getElementById('bg-music');
+            const icon = document.getElementById('music-icon');
+            
+            if (music.paused) {
+                music.play().catch(e => console.log("Audio play blocked until active click event."));
+                icon.classList.remove('fa-volume-xmark', 'text-pink-600');
+                icon.classList.add('fa-volume-high', 'text-green-600');
+            } else {
+                music.pause();
+                icon.classList.remove('fa-volume-high', 'text-green-600');
+                icon.classList.add('fa-volume-xmark', 'text-pink-600');
+            }
+        }
+    </script>
+</body>
+</html>
